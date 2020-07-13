@@ -1,0 +1,34 @@
+{
+  "name": "moikrug_parser",
+  "scripts": {
+    "build": "npm run prt:fmt && npm run lint && lerna run build",
+    "publish": "npm run build && lerna publish",
+    "lint": "eslint . --ext .ts",
+    "prt:fmt": "prettier --config .prettierrc './packages/**/src/**/*.ts' --write",
+    "test": "lerna run test"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "David Shekunts",
+    "email": "mail@davidshekunts.com",
+    "url": "https://davidshekunts.com/"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "2.30.0",
+    "@typescript-eslint/parser": "2.30.0",
+    "eslint": "6.8.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-prettier": "3.1.3",
+    "husky": "4.2.5",
+    "lerna": "3.22.1",
+    "prettier": "2.0.5",
+    "tslint": "6.0.0",
+    "typescript": "3.8.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run prt:fmt && npm run lint && npm run test"
+    }
+  },
+  "dependencies": {}
+}
