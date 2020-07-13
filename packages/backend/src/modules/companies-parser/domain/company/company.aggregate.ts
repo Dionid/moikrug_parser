@@ -12,4 +12,8 @@ export type CompanyState = {
   targetVacancies: Vacancy[]
 }
 
-export class Company extends AggregateRootWithState<CompanyId, CompanyState> {}
+export class Company extends AggregateRootWithState<CompanyId, CompanyState> {
+  addVacancies(vacancies: Vacancy[]) {
+    this.state.targetVacancies = [...this.state.targetVacancies, ...vacancies]
+  }
+}
