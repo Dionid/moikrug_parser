@@ -27,71 +27,79 @@ export class GetAllCompaniesAndTargetVacancies
     return new Vacancy(new VacancyId(v4()), vacancyState)
   }
 
-  private async getNextVacancyPage(currentPage: string): Promise<string> {
-    // . Try to get next
-    // . If doesn't exist, than exist
-    // . If exist return Page
-    return ""
+  private getNextVacancyPage(inactive: boolean, companySlug: string, currentPageNumber: number): string {
+    return this.rootPage + `/${companySlug}${inactive ? "/inactive" : ""}?page=${currentPageNumber + 1}`
   }
 
-  private async parseVacancy(page: string, vacancies: Vacancy[]): Promise<Vacancy[]> {
+  private async parseVacancy(
+    inactive: boolean,
+    companySlug: string,
+    page: string,
+    currentPageNumber: number,
+    vacancies: Vacancy[],
+  ): Promise<Vacancy[]> {
     // ProcessPage
     const vacancy = await this.processVacancyPage(page)
     vacancies.push(vacancy)
 
     // . Go to next page
-    const nextPage = await this.getNextVacancyPage(page)
-    if (!nextPage) {
-      return vacancies
-    }
+    const nextPage = this.getNextVacancyPage(inactive, companySlug, currentPageNumber)
 
     // . Parse nextPage
-    return this.parseVacancy(nextPage, vacancies)
+    return this.parseVacancy(inactive, companySlug, nextPage, currentPageNumber + 1, vacancies)
   }
 
   private async getVacanciesByType(
-    active: boolean,
+    inactive: boolean,
     company: Company,
   ): Promise<Vacancy[]> {
     // . Go to vacancies list page (by type)
-    const vancancyPageByType = ""
-
-    return await this.parseVacancy(vancancyPageByType, [])
+    return await this.parseVacancy(
+      inactive,
+      company.state.originId,
+      this.getNextVacancyPage(inactive, company.state.originId, 0),
+      1,
+      [],
+    )
   }
 
   private async getVacancies(company: Company): Promise<Vacancy[]> {
     // . Get archive / active vacancies
-    const activeVacancies = await this.getVacanciesByType(true, company)
-    const inactiveVacancies = await this.getVacanciesByType(false, company)
+    const activeVacancies = await this.getVacanciesByType(false, company)
+    const inactiveVacancies = await this.getVacanciesByType(true, company)
     return [...activeVacancies, ...inactiveVacancies]
   }
 
   // Company
 
-  private async getNextPage(currentPage: string): Promise<string> {
-    // . Check for limit
-    // . Try to get next
-    // . If doesn't exist, than exist
+  private async getNextPage(currentPageNumber: number): Promise<string> {
     // . If exist return Page
-    return ""
+    return this.rootPage + `?page=${currentPageNumber + 1}`
   }
 
   private async parseCompany(companyListCard: CompanyListCard): Promise<void> {
     // . Get CompanyState from page
     const companyState = await this.parser.getCompanyData(companyListCard)
+
     // . Create Company aggregate and fill it
     const company = new Company(new CompanyId(v4()), companyState)
+
     // . Get vacancies
     const vacancies = await this.getVacancies(company)
     company.addVacancies(vacancies)
+
     // TODO. Save company
     // ...
+
     return
   }
 
-  private async processListPage(page: string): Promise<void> {
+  private async processListPage(pageUrl: string): Promise<void> {
     // . Get companies on page
-    const companies: CompanyListCard[] = this.parser.getCompanies(page)
+    const companies: CompanyListCard[] = this.parser.getCompanies(pageUrl)
+    if (companies.length === 0) {
+      return
+    }
 
     // . Loop through pageCompanies
     for (let i = 0; i < companies.length; i++) {
@@ -99,23 +107,23 @@ export class GetAllCompaniesAndTargetVacancies
     }
   }
 
-  private async parse(page: string): Promise<void> {
+  private async parse(pageUrl: string, currentPageNumber: number): Promise<void> {
     // ProcessPage
-    await this.processListPage(page)
+    await this.processListPage(pageUrl)
 
-    // . Go to next page
-    const nextPage = await this.getNextPage(page)
-    if (!nextPage) {
-      return
-    }
+    // . Go to next pageUrl
+    const nextPage = await this.getNextPage(currentPageNumber)
 
     // . Parse nextPage
-    return this.parse(nextPage)
+    return this.parse(nextPage, currentPageNumber + 1)
   }
 
   async handle(): EitherResultP {
-    // Start parsing
-    await this.parse(this.rootPage)
+    // . Start parsing
+    await this.parse(this.rootPage, 1)
+
+    // TODO. Flush repo
+    // ...
 
     return Result.oku()
   }
