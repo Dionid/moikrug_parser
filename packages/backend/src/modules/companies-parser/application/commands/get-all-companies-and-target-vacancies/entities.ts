@@ -2,4 +2,6 @@ export interface CompanyListCard {
   slug: string
 }
 
-export interface CompanyPageData {}
+export interface VacancyListCard {
+  id: string
+}

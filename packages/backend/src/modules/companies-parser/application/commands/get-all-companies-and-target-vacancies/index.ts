@@ -4,32 +4,36 @@ import { EitherResultP, Result } from "@dddl/core/dist/rop"
 import { Inject } from "typedi"
 import { LOGGER_DI_TOKEN, Logger } from "@dddl/core/dist/logger"
 import { Parser, PARSER_DI_TOKEN } from "./parser"
-import { CompanyListCard } from "./entities"
+import { CompanyListCard, VacancyListCard } from "./entities"
 import { Company } from "../../../domain/company/company.aggregate"
 import { CompanyId } from "../../../domain/company/company.id"
 import { v4 } from "uuid"
 import { Vacancy } from "../../../domain/company/vacancy.entity"
 import { VacancyId } from "../../../domain/company/vacancy.id"
+import {
+  COMPANY_REPOSITORY_DI_TOKEN,
+  CompanyRepository,
+} from "../../../domain/repository"
 
 export class GetAllCompaniesAndTargetVacancies
   implements CommandHandler<GetAllCompaniesAndTargetVacanciesCommand> {
   constructor(
     @Inject(LOGGER_DI_TOKEN) private logger: Logger,
     @Inject(PARSER_DI_TOKEN) private parser: Parser,
-    private rootPage: string,
+    @Inject(COMPANY_REPOSITORY_DI_TOKEN) private companyRepository: CompanyRepository,
   ) {}
 
   // Vacancy
-  private async processVacancyPage(page: string): Promise<Vacancy> {
+  private async processVacancyPage(card: VacancyListCard): Promise<Vacancy> {
     // . Get CompanyState from page
-    const vacancyState = await this.parser.getVacancyState(page)
+    const vacancyState = await this.parser.getVacancyState(card)
     // . Get vacancies
     return new Vacancy(new VacancyId(v4()), vacancyState)
   }
 
-  private getNextVacancyPage(inactive: boolean, companySlug: string, currentPageNumber: number): string {
-    return this.rootPage + `/${companySlug}${inactive ? "/inactive" : ""}?page=${currentPageNumber + 1}`
-  }
+  // private getNextVacancyPage(inactive: boolean, companySlug: string, currentPageNumber: number): string {
+  //   return this.rootPage + `/${companySlug}${inactive ? "/inactive" : ""}?page=${currentPageNumber + 1}`
+  // }
 
   private async parseVacancy(
     inactive: boolean,
@@ -38,15 +42,33 @@ export class GetAllCompaniesAndTargetVacancies
     currentPageNumber: number,
     vacancies: Vacancy[],
   ): Promise<Vacancy[]> {
-    // ProcessPage
-    const vacancy = await this.processVacancyPage(page)
-    vacancies.push(vacancy)
+    // . Get every vacancy card and parse
+    const vacancyListCards = await this.parser.getVacancyListCards(page)
+    if (vacancyListCards.length === 0) {
+      return vacancies
+    }
+
+    // . Loop throught them
+    for (let i = 0; i < vacancyListCards.length; i++) {
+      const vacancy = await this.processVacancyPage(vacancyListCards[i])
+      vacancies.push(vacancy)
+    }
 
     // . Go to next page
-    const nextPage = this.getNextVacancyPage(inactive, companySlug, currentPageNumber)
+    const nextPage = this.parser.getNextVacancyPage(
+      inactive,
+      companySlug,
+      currentPageNumber,
+    )
 
     // . Parse nextPage
-    return this.parseVacancy(inactive, companySlug, nextPage, currentPageNumber + 1, vacancies)
+    return this.parseVacancy(
+      inactive,
+      companySlug,
+      nextPage,
+      currentPageNumber + 1,
+      vacancies,
+    )
   }
 
   private async getVacanciesByType(
@@ -57,7 +79,7 @@ export class GetAllCompaniesAndTargetVacancies
     return await this.parseVacancy(
       inactive,
       company.state.originId,
-      this.getNextVacancyPage(inactive, company.state.originId, 0),
+      this.parser.getNextVacancyPage(inactive, company.state.originId, 0),
       1,
       [],
     )
@@ -72,10 +94,10 @@ export class GetAllCompaniesAndTargetVacancies
 
   // Company
 
-  private async getNextPage(currentPageNumber: number): Promise<string> {
-    // . If exist return Page
-    return this.rootPage + `?page=${currentPageNumber + 1}`
-  }
+  // private async getNextPage(currentPageNumber: number): Promise<string> {
+  //   // . If exist return Page
+  //   return this.rootPage + `?page=${currentPageNumber + 1}`
+  // }
 
   private async parseCompany(companyListCard: CompanyListCard): Promise<void> {
     // . Get CompanyState from page
@@ -88,31 +110,38 @@ export class GetAllCompaniesAndTargetVacancies
     const vacancies = await this.getVacancies(company)
     company.addVacancies(vacancies)
 
-    // TODO. Save company
-    // ...
+    // . Save company
+    const res = await this.companyRepository.save(company)
+    if (res.isError()) {
+      throw res.error
+    }
 
     return
   }
 
-  private async processListPage(pageUrl: string): Promise<void> {
+  private async processListPage(pageUrl: string): Promise<boolean> {
     // . Get companies on page
-    const companies: CompanyListCard[] = this.parser.getCompanies(pageUrl)
+    const companies: CompanyListCard[] = await this.parser.getCompaniesListCards(pageUrl)
     if (companies.length === 0) {
-      return
+      return true
     }
 
     // . Loop through pageCompanies
     for (let i = 0; i < companies.length; i++) {
       await this.parseCompany(companies[i])
     }
+    return false
   }
 
   private async parse(pageUrl: string, currentPageNumber: number): Promise<void> {
     // ProcessPage
-    await this.processListPage(pageUrl)
+    const stop = await this.processListPage(pageUrl)
+    if (stop) {
+      return
+    }
 
     // . Go to next pageUrl
-    const nextPage = await this.getNextPage(currentPageNumber)
+    const nextPage = this.parser.getNextPage(currentPageNumber)
 
     // . Parse nextPage
     return this.parse(nextPage, currentPageNumber + 1)
@@ -120,7 +149,7 @@ export class GetAllCompaniesAndTargetVacancies
 
   async handle(): EitherResultP {
     // . Start parsing
-    await this.parse(this.rootPage, 1)
+    await this.parse(this.parser.getNextPage(0), 1)
 
     // TODO. Flush repo
     // ...
