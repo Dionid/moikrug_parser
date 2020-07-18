@@ -183,7 +183,8 @@ describe("GetAllCompaniesAndTargetVacancies", function () {
             return (
               company.state.originId === firstCompanyState.originId &&
               company.state.targetVacancies.length === 1 &&
-              company.state.targetVacancies[0].state.originId === firstvacancyState.originId // TODO. Add equal function
+              company.state.targetVacancies[0].state.originId ===
+                firstvacancyState.originId // TODO. Add equal function
             )
           }),
         )
