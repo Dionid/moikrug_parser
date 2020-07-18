@@ -17,10 +17,13 @@ import {
 
 export class GetAllCompaniesAndTargetVacancies
   implements CommandHandler<GetAllCompaniesAndTargetVacanciesCommand> {
+  private companyProcessed = 0
+
   constructor(
     @Inject(LOGGER_DI_TOKEN) private logger: Logger,
     @Inject(PARSER_DI_TOKEN) private parser: Parser,
     @Inject(COMPANY_REPOSITORY_DI_TOKEN) private companyRepository: CompanyRepository,
+    private companyLimits: number,
   ) {}
 
   // Vacancy
@@ -128,7 +131,11 @@ export class GetAllCompaniesAndTargetVacancies
 
     // . Loop through pageCompanies
     for (let i = 0; i < companies.length; i++) {
+      if (this.companyProcessed === this.companyLimits) {
+        return true
+      }
       await this.parseCompany(companies[i])
+      this.companyProcessed = this.companyProcessed + 1
     }
     return false
   }

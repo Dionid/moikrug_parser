@@ -20,7 +20,7 @@ describe("GetAllCompaniesAndTargetVacancies", function () {
     logger = mock<Logger>()
     parser = mock<Parser>()
     companyRepository = mock<CompanyRepository>()
-    uc = new GetAllCompaniesAndTargetVacancies(logger, parser, companyRepository)
+    uc = new GetAllCompaniesAndTargetVacancies(logger, parser, companyRepository, -1)
   })
 
   describe("if everything allright", function () {
