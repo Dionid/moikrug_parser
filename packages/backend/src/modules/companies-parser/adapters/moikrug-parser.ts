@@ -39,9 +39,9 @@ export class MoikrugParser {
     const description = $(".about_company .description").text()
     const site = $(".company_info .company_site").text()
     const companySlugSplittedArr = company.slug.split("/")
-    const originId = companySlugSplittedArr[companySlugSplittedArr.length-1]
+    const originId = companySlugSplittedArr[companySlugSplittedArr.length - 1]
     const contacts: string[] = []
-    $(".company_info .contacts .contact").each(function(i, val) {
+    $(".company_info .contacts .contact").each(function (i, val) {
       const type = $(val).find(".type").text() as string
       const value = $(val).find(".value").text() as string
       contacts.push(`${type}: ${value}`)
@@ -63,7 +63,7 @@ export class MoikrugParser {
   // public async getVacancyListCards(vacancyPage: string): Promise<VacancyListCard[]> {
   //
   // }
-  //
+
   // public async getVacancyState(card: VacancyListCard): Promise<VacancyState> {
   //
   // }

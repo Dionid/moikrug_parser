@@ -21,9 +21,9 @@ describe("Moikrug Parser", function () {
   describe("getCompanyData method", function () {
     it("should return company data", async function () {
       const url = service.getNextPage(0)
-      const companyList = {slug: "/companies/mailrugroup"}
+      const companyList = { slug: "/companies/mailrugroup" }
       const companyData = await service.getCompanyData(companyList)
-      expect(companyData.name).toBe('Mail.ru Group4.23')
+      expect(companyData.name).toBe("Mail.ru Group4.23")
     })
   })
 })
