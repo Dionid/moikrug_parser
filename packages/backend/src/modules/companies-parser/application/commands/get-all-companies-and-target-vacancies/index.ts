@@ -34,10 +34,6 @@ export class GetAllCompaniesAndTargetVacancies
     return new Vacancy(new VacancyId(v4()), vacancyState)
   }
 
-  // private getNextVacancyPage(inactive: boolean, companySlug: string, currentPageNumber: number): string {
-  //   return this.rootPage + `/${companySlug}${inactive ? "/inactive" : ""}?page=${currentPageNumber + 1}`
-  // }
-
   private async parseVacancy(
     inactive: boolean,
     companySlug: string,
@@ -96,11 +92,6 @@ export class GetAllCompaniesAndTargetVacancies
   }
 
   // Company
-
-  // private async getNextPage(currentPageNumber: number): Promise<string> {
-  //   // . If exist return Page
-  //   return this.rootPage + `?page=${currentPageNumber + 1}`
-  // }
 
   private async parseCompany(companyListCard: CompanyListCard): Promise<void> {
     // . Get CompanyState from page
