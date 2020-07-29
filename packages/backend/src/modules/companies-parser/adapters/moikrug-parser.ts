@@ -1,7 +1,7 @@
 import {
   CompanyListCard,
   VacancyListCard,
-} from "../application/commands/get-all-companies-and-target-vacancies/entities"
+} from "../application/commands/get-all-companies-and-vacancies/entities"
 import { CompanyState } from "../domain/company/company.aggregate"
 import { Vacancy, VacancyState } from "../domain/company/vacancy.entity"
 import { AxiosInstance } from "axios"

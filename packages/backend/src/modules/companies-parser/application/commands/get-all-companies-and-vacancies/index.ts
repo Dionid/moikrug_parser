@@ -1,4 +1,4 @@
-import { CommandHandler, CommandRequest } from "@dddl/core/dist/cqrs"
+import { CommandHandler } from "@dddl/core/dist/cqrs"
 import { GetAllCompaniesAndTargetVacanciesCommand } from "./command"
 import { EitherResultP, Result } from "@dddl/core/dist/rop"
 import { Inject } from "typedi"
@@ -15,7 +15,7 @@ import {
   CompanyRepository,
 } from "../../../domain/repository"
 
-export class GetAllCompaniesAndTargetVacancies
+export class GetAllCompaniesAndVacancies
   implements CommandHandler<GetAllCompaniesAndTargetVacanciesCommand> {
   private companyProcessed = 0
 
@@ -47,7 +47,7 @@ export class GetAllCompaniesAndTargetVacancies
       return vacancies
     }
 
-    // . Loop throught them
+    // . Loop through them
     for (let i = 0; i < vacancyListCards.length; i++) {
       const vacancy = await this.processVacancyPage(vacancyListCards[i])
       vacancies.push(vacancy)

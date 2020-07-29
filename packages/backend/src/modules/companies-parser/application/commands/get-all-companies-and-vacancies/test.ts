@@ -1,4 +1,4 @@
-import { GetAllCompaniesAndTargetVacancies } from "./index"
+import { GetAllCompaniesAndVacancies } from "./index"
 import { Logger } from "@dddl/core/dist/logger"
 import { Parser } from "./parser"
 import { Matcher, mock, MockProxy } from "jest-mock-extended"
@@ -10,7 +10,7 @@ import { v4 } from "uuid"
 import { VacancyState } from "../../../domain/company/vacancy.entity"
 
 describe("GetAllCompaniesAndTargetVacancies", function () {
-  let uc: GetAllCompaniesAndTargetVacancies
+  let uc: GetAllCompaniesAndVacancies
   let logger: MockProxy<Logger>
   let parser: MockProxy<Parser>
   let companyRepository: MockProxy<CompanyRepository>
@@ -20,7 +20,7 @@ describe("GetAllCompaniesAndTargetVacancies", function () {
     logger = mock<Logger>()
     parser = mock<Parser>()
     companyRepository = mock<CompanyRepository>()
-    uc = new GetAllCompaniesAndTargetVacancies(logger, parser, companyRepository, -1)
+    uc = new GetAllCompaniesAndVacancies(logger, parser, companyRepository, -1)
   })
 
   describe("if everything allright", function () {
