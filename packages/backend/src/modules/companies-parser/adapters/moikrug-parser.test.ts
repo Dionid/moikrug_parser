@@ -12,7 +12,7 @@ describe("Moikrug Parser", function () {
 
   describe("getCompaniesListCards method", function () {
     it("should return more than 1 company", async function () {
-      const url = service.getNextPage(0)
+      const url = service.getNextCompaniesPage(0)
       const companies = await service.getCompaniesListCards(url)
       expect(companies.length).toBeGreaterThan(1)
     })
@@ -23,6 +23,14 @@ describe("Moikrug Parser", function () {
       const companyList = { slug: "/companies/mailrugroup" }
       const companyData = await service.getCompanyData(companyList)
       expect(companyData.name).toBe("Mail.ru Group4.23")
+    })
+  })
+
+  describe("getVacancyListCards method", function () {
+    it("should return vacancies", async function () {
+      const url = service.getNextVacancyPage(false, "/companies/mailrugroup", 0)
+      const vacancies = await service.getVacancyListCards(url)
+      expect(vacancies.length).toBeGreaterThan(1)
     })
   })
 })

@@ -152,14 +152,14 @@ describe("GetAllCompaniesAndTargetVacancies", function () {
     it("should save correct companies with vacancies", async function () {
       const vacancyListCards = [
         {
-          id: v4(),
+          slug: v4(),
         },
       ]
       const firstCompanyInactiveVacancyPageUrlPage2 =
         rootPage + firstCompanyState.originId + "/vacancypage/inactive/?page=2"
       const firstvacancyState: VacancyState = {
         name: v4(),
-        originId: vacancyListCards[0].id,
+        originId: vacancyListCards[0].slug,
         isInactive: false,
         tags: [],
         content: "Good vacancy",

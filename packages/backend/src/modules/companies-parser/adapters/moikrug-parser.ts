@@ -3,7 +3,6 @@ import {
   VacancyListCard,
 } from "../application/commands/get-all-companies-and-vacancies/entities"
 import { CompanyState } from "../domain/company/company.aggregate"
-import { Vacancy, VacancyState } from "../domain/company/vacancy.entity"
 import { AxiosInstance } from "axios"
 
 export class MoikrugParser {
@@ -60,15 +59,28 @@ export class MoikrugParser {
     return companyState
   }
 
-  // public async getVacancyListCards(vacancyPage: string): Promise<VacancyListCard[]> {
-  //
-  // }
+  public async getVacancyListCards(pageUrl: string): Promise<VacancyListCard[]> {
+    // . Get page by url
+    const response = await this.httpClient.get(pageUrl)
+    const $ = this.cheerio.load(response.data)
+    const vacancyEls = $(".card-list .card-list__item")
+    const vacancyListCard: VacancyListCard[] = []
+    // . Form CompanyListCard array
+    vacancyEls.each(function (index, value) {
+      const slug = $(value).find(".vacancy-card__title a").attr("href") as string
+      vacancyListCard.push({
+        slug,
+      })
+    })
+    // . Return CompanyListCard
+    return vacancyListCard
+  }
 
   // public async getVacancyState(card: VacancyListCard): Promise<VacancyState> {
   //
   // }
 
-  public getNextPage(currentPageNumber: number): string {
+  public getNextCompaniesPage(currentPageNumber: number): string {
     // . If exist return Page
     return this.rootPage + `/companies?page=${currentPageNumber + 1}`
   }

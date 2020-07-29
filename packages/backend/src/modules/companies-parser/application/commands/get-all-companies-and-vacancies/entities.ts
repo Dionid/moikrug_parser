@@ -3,5 +3,5 @@ export interface CompanyListCard {
 }
 
 export interface VacancyListCard {
-  id: string
+  slug: string
 }
